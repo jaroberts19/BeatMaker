@@ -23,14 +23,17 @@ class DrumKit {
     }
 
     repeat(){
+        //this combined with the this.index++ intitiates an 8 part loop
         let step = this.index % 8;
+        //grabs the pads from the html document
         const activeBars = document.querySelectorAll(`.b${step}`)
-        //Loop over the bars
+        //loops over the pads
         activeBars.forEach(bar => {
             bar.style.animation = `playTrack 0.3s alternate ease-in-out 2`;
-            //Check if pads are active  
+            //checks if pads are active  
             if(bar.classList.contains('active')){
-                //Check each sound 
+                //checks each sound and plays the right one
+                //currentTime resets the sound, so if there is a high bpm the loop still plays each beat individually  
                 if(bar.classList.contains('kick-pad')){
                     this.kickAudio.currentTime = 0;
                     this.kickAudio.play();
@@ -52,14 +55,17 @@ class DrumKit {
         this.index++;
     }
     start(){
+        //calculates how long each pad interval is
+        //60/bpm gives you the legth of how long a beat is
+        //for example 60/120 = 0.5 which represents half a second
         const interval = (60 / this.bpm) * 1000;
-        //Check if it's playing
+        //Check if it's already playing
         if(!this.isPlaying){
         this.isPlaying = setInterval(() => {
             this.repeat()
         }, interval);
       }else {
-          //Clear interval 
+          //if it is already playing clear the interval
           clearInterval(this.isPlaying);
           this.isPlaying = null;
       }
@@ -73,6 +79,7 @@ class DrumKit {
             this.playBtn.classList.remove('active');
         }
     }
+    //grabs the selection and changes the src to the new value chosen 
     changeSound(e){
         const selectionName = e.target.name;
         const selectionValue = e.target.value;
@@ -92,7 +99,9 @@ class DrumKit {
         }
     }
     mute(e){
+        //stores the number assigned to data-track in the html document
         const muteIndex = e.target.getAttribute('data-track');
+        //mutes it if it's active and unmutes it when it's not
         e.target.classList.toggle("active");
         if(e.target.classList.contains('active')){
             switch(muteIndex){
@@ -126,10 +135,12 @@ class DrumKit {
             }
         }
     }
+    //changes the number shown to the user
     changeTempo(e){
         const tempoText = document.querySelector('.tempo-nr');
         tempoText.innerText = e.target.value;
     }
+    //clears interval in order to add new bpm; otherwise the bpm won't update 
     updateTempo(e){
         this.bpm = e.target.value;
         clearInterval(this.isPlaying);
@@ -143,33 +154,40 @@ class DrumKit {
 
 const drumKit = new DrumKit();
 
-//Event Listeners 
+//Event Listeners
 
 drumKit.pads.forEach(pad => {
+    //makes pad active when a user clicks on it
     pad.addEventListener('click', drumKit.activePad);
+    //removes the animation once it finishes 
     pad.addEventListener('animationend', function(){
         this.style.animation = "";
     });
 });
 
-//added a function here instead of just drumKit.start b/c it'll think your referencing playBtn instead
+//allows user to activate the loop by pressing 'start'
+//added a function here instead of just drumKit.start because it'll think your referencing playBtn instead
+//this is because the event listener was added directly to playBtn 
 drumKit.playBtn.addEventListener('click', function(){
     drumKit.updateBtn();
     drumKit.start();
 });
 
+//allows user to change the sounds 
 drumKit.selects.forEach(select => {
     select.addEventListener('change', function(e){
         drumKit.changeSound(e);
     })
 });
 
+//allows user to mute each selection
 drumKit.muteBtns.forEach(btn => {
     btn.addEventListener('click', function(e){
         drumKit.mute(e);
     })
 })
 
+//allows user to update bpm
 drumKit.tempoSlider.addEventListener('input',function(e){
     drumKit.changeTempo(e);
 })
@@ -178,8 +196,7 @@ drumKit.tempoSlider.addEventListener('change',function(e){
     drumKit.updateTempo(e);
 })
 
-//Dark Mode
-
+//enables dark mode
 function darkMode() {
     let body = document.body;
     let icon = document.querySelector(".fa-moon");
